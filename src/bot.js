@@ -3,6 +3,9 @@
 // This going to basically load up all of the environment variables that are inside our env file
 require("dotenv").config();
 
+// Import the filesystem module
+const fs = require('fs')
+
 /* 1- Adding the Bot to our Server */
 
 /* Before proceeding, we need to complete these steps :
@@ -30,12 +33,47 @@ For example, omitting the DIRECT_MESSAGE_TYPING intent would prevent the discord
 Se we have to go to Discord Developer Portal, choose our application, then go to the Bot section, and enable all the intents. (Or the ones we are using.)
 */
 
-const { Client, GatewayIntentBits } = require('discord.js');
+const { Client, Collection, GatewayIntentBits } = require('discord.js');
 
-const client = new Client({ 
+const client = new Client({
     intents: [
         GatewayIntentBits.Guilds
     ]
 });
 
+/*
+Because we're creating a separate file (module) for each event and each commands, our main file (app.js, or index.js, or whatever you're calling it) will change drastically from a list of commands to a simple file that loads other files.
+*/
+
+client.commands = new Collection();
+client.commandArray = [];
+
+const functionFolders = fs.readdirSync('./src/functions')
+for (const folder of functionFolders) {
+    const functionFiles = fs
+        .readdirSync(`./src/functions/${folder}`)
+        .filter(file => file.endsWith('.js'));
+    for (const file of functionFiles)
+        // For each file we are passing in client as param, so then we can call client functions and use it anywhere in our code
+        require(`./functions/${folder}/${file}`)(client);
+}
+
+client.handleEvents();
+client.handleCommands();
 client.login(process.env.DISCORDJS_BOT_TOKEN);
+
+
+
+/*
+The fs.readdirSync() method is used to synchronously read the contents of a given directory. The method returns an array with all the file names or objects in the directory.
+*/
+
+/*
+In NodeJS, require() is a built-in function to include external modules that exist in separate files. require() statement basically reads a JavaScript file, <<executes it>>, and then proceeds to return the export object.
+
+require() statement not only allows to add built-in core NodeJS modules but also community-based and local modules, and it's not part of the standard JavaScript API.
+
+var myVar = require('http'); //to use built-in modules
+
+Var myVar2 = require('./myLocaModule') to use local modules
+*/
