@@ -10,8 +10,8 @@ module.exports = (client) => {
             
             switch(folder) {
                 case "client": 
-                    for (const file of commandFiles) {
-                        const event = requrie (`../../events/${folder}/${file}`);
+                    for (const file of eventFiles) {
+                        const event = require(`../../events/${folder}/${file}`);
                         if (event.once) client.once(event.name, (...args) => event.execute(...args, client));
                         else client.on(event.name, (...args) => event.execute(...args, client));
                     }
